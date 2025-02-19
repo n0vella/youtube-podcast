@@ -1,0 +1,9 @@
+[lint]
+select = ["ALL"]
+ignore = [
+    "D1", # docstrings
+    "DJ008", # missing __str__ method,
+    "D4", # how to write docstrings
+    "TD002", "TD003", # author and link in TODO comment
+    "ERA001" # found commented code
+]

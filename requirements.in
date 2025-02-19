@@ -1,0 +1,10 @@
+# server
+Flask
+flask_cors
+Flask-Caching
+
+# api
+google-api-python-client
+
+#other
+python-dotenv

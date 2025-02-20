@@ -5,6 +5,7 @@ Flask-Caching
 
 # api
 google-api-python-client
+yt-dlp
 
 #other
 python-dotenv

@@ -42,5 +42,6 @@ def generate_feed(channel_info: ChannelInfo, videos: list[Video]) -> str:
             "href",
             video.get("thumbnail_url", channel.get("thumbnail_url", "")),
         )
+        ET.SubElement(item, "itunes:duration").text = str(video.get("duration", 0))
 
     return ET.tostring(rss)

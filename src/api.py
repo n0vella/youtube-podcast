@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 from datetime import datetime
 from typing import TypedDict
 
@@ -20,6 +21,7 @@ class Video(TypedDict):
     description: str
     thumbnail_url: str
     published_at: datetime
+    duration: int
 
 
 class ChannelNotFoundError(Exception):
@@ -67,6 +69,40 @@ def get_channel_info(channel_id: str) -> ChannelInfo:
     }
 
 
+def get_video_durations(video_ids: list[str]):
+    r = (
+        youtube.videos()
+        .list(
+            part="contentDetails",
+            id=",".join(video_ids),
+        )
+        .execute()
+    )
+
+    durations = []
+
+    for item in r["items"]:
+        raw_duration = item["contentDetails"]["duration"]
+
+        parsed_duration = re.match(
+            r"PT(?:(?P<h>\d+)H)?(?:(?P<m>\d{1,2})M)?((?P<s>\d{1,2})S)?",
+            raw_duration,
+        )
+        time = parsed_duration.groupdict()
+
+        seconds = 0
+        if time["h"]:
+            seconds += int(time["h"]) * 3600
+        if time["m"]:
+            seconds += int(time["m"]) * 60
+        if time["s"]:
+            seconds += int(time["s"])
+
+        durations.append(seconds)
+
+    return durations
+
+
 def get_channel_videos(channel_id: str) -> list[Video]:
     api_args = {
         "part": "snippet",
@@ -84,7 +120,9 @@ def get_channel_videos(channel_id: str) -> list[Video]:
 
         videos = r.get("items", [])
 
-        for video in videos:
+        durations = get_video_durations([video["id"]["videoId"] for video in videos])
+
+        for video, duration in zip(videos, durations):
             result: Video = {}
 
             result["video_id"] = video["id"]["videoId"]
@@ -97,6 +135,7 @@ def get_channel_videos(channel_id: str) -> list[Video]:
                 "%Y-%m-%dT%H:%M:%S%z",
             )
             result["thumbnail_url"] = snippet["thumbnails"]["high"]["url"]
+            result["duration"] = duration
 
             results.append(result)
 

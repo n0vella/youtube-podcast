@@ -8,6 +8,7 @@ from googleapiclient.discovery import build
 
 
 class ChannelInfo(TypedDict):
+    id: str
     title: str
     description: str
     thumbnail_url: str
@@ -59,6 +60,7 @@ def get_channel_info(channel_id: str) -> ChannelInfo:
     channel = r["items"][0]["snippet"]
 
     return {
+        "id": channel_id,
         "title": channel["title"],
         "description": channel["description"],
         "thumbnail_url": channel["thumbnails"]["high"]["url"],

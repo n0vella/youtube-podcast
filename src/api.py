@@ -7,6 +7,8 @@ from typing import TypedDict
 
 from googleapiclient.discovery import build
 
+from src.storage import save_videos
+
 
 class ChannelInfo(TypedDict):
     id: str
@@ -106,8 +108,7 @@ def get_video_durations(video_ids: list[str]) -> list[int]:
     return durations
 
 
-def get_channel_videos(channel_id: str) -> list[Video]:
-    # Getting playlist id from channel
+def get_uploads_playlist_id(channel_id: str) -> str:
     r = (
         youtube.channels()
         .list(
@@ -117,11 +118,13 @@ def get_channel_videos(channel_id: str) -> list[Video]:
         .execute()
     )
 
-    uploads_playlist_id = r["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+    return r["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
 
+
+def get_channel_videos(channel_id: str) -> list[Video]:
     api_args = {
         "part": "snippet",
-        "playlistId": uploads_playlist_id,
+        "playlistId": get_uploads_playlist_id(channel_id),
         "maxResults": 50,
     }
 
@@ -137,23 +140,29 @@ def get_channel_videos(channel_id: str) -> list[Video]:
         video_ids = [video["snippet"]["resourceId"]["videoId"] for video in videos]
         durations = get_video_durations(video_ids)
 
-        for video, duration in zip(videos, durations):
-            result: Video = {
+        iteration_result = [
+            {
                 "video_id": video["snippet"]["resourceId"]["videoId"],
                 "title": video["snippet"]["title"],
                 "description": video["snippet"]["description"],
                 "published_at": datetime.strptime(
                     video["snippet"]["publishedAt"],
                     "%Y-%m-%dT%H:%M:%S%z",
-                ),
+                ).timestamp(),
                 "thumbnail_url": video["snippet"]["thumbnails"]["high"]["url"],
                 "duration": duration,
             }
-            results.append(result)
+            for video, duration in zip(videos, durations)
+        ]
+
+        results.extend(iteration_result)
+
+        file_updated, feed = save_videos(channel_id, iteration_result)
+
+        if file_updated:
+            return feed
 
         if next_page_token:
             api_args["pageToken"] = next_page_token
         else:
-            break
-
-    return results
+            return results

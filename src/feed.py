@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import xml.etree.ElementTree as ET
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from urllib.parse import urljoin
 
@@ -34,7 +35,10 @@ def generate_feed(channel_info: ChannelInfo, videos: list[Video]) -> str:
 
         ET.SubElement(item, "title").text = video["title"]
         ET.SubElement(item, "description").text = video.get("description", "")
-        ET.SubElement(item, "pubDate").text = video.get("published_at").isoformat()
+        ET.SubElement(item, "pubDate").text = datetime.fromtimestamp(
+            video.get("published_at"),
+            tz=UTC,
+        ).isoformat()
         enclosure = ET.SubElement(item, "enclosure")
         enclosure.set("url", urljoin(os.getenv("SERVER_URL"), f"audio/{video_id}"))
         enclosure.set("type", "audio/mpeg")

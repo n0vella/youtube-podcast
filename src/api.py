@@ -32,6 +32,9 @@ youtube = build("youtube", "v3", developerKey=os.getenv("YOUTUBE_API_KEY"))
 
 
 def get_channel_id(channel_name: str) -> str:
+    if channel_name.startswith("@"):
+        channel_name = channel_name[1:]
+
     r = (
         youtube.search()
         .list(

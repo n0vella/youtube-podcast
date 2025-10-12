@@ -107,42 +107,50 @@ def get_video_durations(video_ids: list[str]) -> list[int]:
 
 
 def get_channel_videos(channel_id: str) -> list[Video]:
+    # Getting playlist id from channel
+    r = (
+        youtube.channels()
+        .list(
+            part="contentDetails",
+            id=channel_id,
+        )
+        .execute()
+    )
+
+    uploads_playlist_id = r["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+
     api_args = {
         "part": "snippet",
-        "channelId": channel_id,
+        "playlistId": uploads_playlist_id,
         "maxResults": 50,
-        "order": "date",
-        "type": "video",
     }
 
     results: list[Video] = []
 
     while True:
-        r = youtube.search().list(**api_args).execute()
+        # search api endpoint doesn't work well
+        r = youtube.playlistItems().list(**api_args).execute()
         next_page_token = r.get("nextPageToken")
 
         videos = r.get("items", [])
 
-        durations = get_video_durations([video["id"]["videoId"] for video in videos])
+        video_ids = [video["snippet"]["resourceId"]["videoId"] for video in videos]
+        durations = get_video_durations(video_ids)
 
         for video, duration in zip(videos, durations):
-            result: Video = {}
-
-            result["video_id"] = video["id"]["videoId"]
-            snippet = video["snippet"]
-
-            result["title"] = snippet["title"]
-            result["description"] = snippet["description"]
-            result["published_at"] = datetime.strptime(
-                snippet["publishedAt"],
-                "%Y-%m-%dT%H:%M:%S%z",
-            )
-            result["thumbnail_url"] = snippet["thumbnails"]["high"]["url"]
-            result["duration"] = duration
-
+            result: Video = {
+                "video_id": video["snippet"]["resourceId"]["videoId"],
+                "title": video["snippet"]["title"],
+                "description": video["snippet"]["description"],
+                "published_at": datetime.strptime(
+                    video["snippet"]["publishedAt"],
+                    "%Y-%m-%dT%H:%M:%S%z",
+                ),
+                "thumbnail_url": video["snippet"]["thumbnails"]["high"]["url"],
+                "duration": duration,
+            }
             results.append(result)
 
-        # keep fetching till the last page
         if next_page_token:
             api_args["pageToken"] = next_page_token
         else:

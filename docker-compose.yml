@@ -1,7 +1,9 @@
 services:
   youtube-podcast:
-    build: .
+    container_name: youtube-podcast
     ports:
       - "18622:8000"
     env_file:
       - .env
+    volumes:
+      - ./storage:/code/feeds

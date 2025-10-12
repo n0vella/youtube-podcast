@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from src.api import ChannelInfo, Video
 
 
-def generate_feed(channel_info: ChannelInfo, videos: list[Video]) -> str:
+def generate_feed(channel_info: ChannelInfo, videos: list[Video], root_url: str) -> str:
     # create xml headers
     # root
     rss = ET.Element("rss")
@@ -40,7 +40,10 @@ def generate_feed(channel_info: ChannelInfo, videos: list[Video]) -> str:
             tz=UTC,
         ).isoformat()
         enclosure = ET.SubElement(item, "enclosure")
-        enclosure.set("url", urljoin(os.getenv("SERVER_URL"), f"audio/{video_id}"))
+        enclosure.set(
+            "url",
+            urljoin(os.getenv("SERVER_URL"), f"{root_url}audio/{video_id}"),
+        )
         enclosure.set("type", "audio/mpeg")
         ET.SubElement(item, "itunes:image").set(
             "href",

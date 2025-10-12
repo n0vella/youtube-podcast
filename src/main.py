@@ -34,7 +34,7 @@ def get_channel_feed(channel_name: str) -> Response:
 
     videos = filter(filter_results, videos)
 
-    feed_xml = generate_feed(channel_info, videos)
+    feed_xml = generate_feed(channel_info, videos, request.url_root)
     return Response(feed_xml, mimetype="application/xml")
 
 

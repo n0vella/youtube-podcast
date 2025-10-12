@@ -1,8 +1,4 @@
-import re
-from datetime import datetime, timezone
-
-import requests
-from flask import Flask, Response, redirect, request, stream_with_context
+from flask import Flask, Response, redirect, request
 from flask_caching import Cache
 from flask_cors import CORS
 
@@ -40,23 +36,6 @@ def get_channel_feed(channel_name: str) -> Response:
 
 @app.route("/audio/<string:video_id>")
 def get_audio(video_id: str) -> Response:
-    audio_url = cache.get(video_id)
-    if audio_url:
-        return redirect(audio_url)
-
     audio_url = get_audio_link(video_id)
 
-    expire = re.search(r"expire=(\d{10,})", audio_url).group(1)
-
-    timeout = datetime.fromtimestamp(int(expire), tz=timezone.utc) - datetime.now(
-        tz=timezone.utc,
-    )
-
-    cache.set(video_id, audio_url, timeout=int(timeout.seconds))
-
-    response = requests.get(audio_url, stream=True, timeout=5)
-
-    return Response(
-        stream_with_context(response.iter_content(chunk_size=1024)),
-        content_type=response.headers.get("content-type", "audio/mpeg"),
-    )
+    return redirect(audio_url, code=302)

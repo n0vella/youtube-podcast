@@ -72,7 +72,7 @@ def get_channel_info(channel_id: str) -> ChannelInfo:
     }
 
 
-def get_video_durations(video_ids: list[str]):
+def get_video_durations(video_ids: list[str]) -> list[int]:
     r = (
         youtube.videos()
         .list(

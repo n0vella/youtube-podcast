@@ -5,5 +5,6 @@ ignore = [
     "DJ008", # missing __str__ method,
     "D4", # how to write docstrings
     "TD002", "TD003", # author and link in TODO comment
-    "ERA001" # found commented code
+    "ERA001", # found commented code
+    "ANN20" # missing return type
 ]

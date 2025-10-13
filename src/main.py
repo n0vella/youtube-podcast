@@ -1,4 +1,7 @@
-from flask import Flask, Response, redirect, request
+import re
+
+import requests
+from flask import Flask, Response, request
 from flask_caching import Cache
 from flask_cors import CORS
 
@@ -34,8 +37,82 @@ def get_channel_feed(channel_name: str) -> Response:
     return Response(feed_xml, mimetype="application/xml")
 
 
-@app.route("/audio/<string:video_id>")
-def get_audio(video_id: str) -> Response:
-    audio_url = get_audio_link(video_id)
+CHUNK_SIZE = 1024 * 1024 * 10
 
-    return redirect(audio_url, code=302)
+
+@app.route("/audio/<string:video_id>")
+def get_audio(video_id: str):
+    url = get_audio_link(video_id)
+
+    # minimal browser-like headers
+    h = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/127.0.0.0 Safari/537.36"
+        ),
+        "Accept": "*/*",
+    }
+
+    # get total size via HEAD
+    head = requests.head(url, headers=h, timeout=10, allow_redirects=True)
+    total = head.headers.get("Content-Length", 0)
+    mimetype = head.headers.get("Content-Type", "audio/mp4")
+
+    # check if client wants a range (seeking support)
+    client_range = request.headers.get("Range")
+    if client_range:
+        # proxy single range request directly (for seek)
+        upstream = requests.get(
+            url,
+            headers={**h, "Range": client_range},
+            stream=True,
+            timeout=15,
+        )
+
+        # return response from YouTube mantaining some headers
+        resp = Response(
+            upstream.iter_content(256 * 1024),
+            status=upstream.status_code,
+            mimetype=mimetype,
+            direct_passthrough=True,
+        )
+        for key in ("Content-Range", "Content-Length", "Accept-Ranges"):
+            if val := upstream.headers.get(key):
+                resp.headers[key] = val
+        return resp
+
+    # full download: use chunked range requests to avoid throttling
+    def generate():
+        pos = 0
+        total_int = int(total) if total else pos + CHUNK_SIZE
+        while pos < total_int:
+            rng = f"bytes={pos}-{min(pos + CHUNK_SIZE, total_int) - 1}"
+            r = requests.get(url, headers={**h, "Range": rng}, stream=True, timeout=15)
+
+            if r.status_code not in (200, 206):
+                break
+
+            yield from r.iter_content(256 * 1024)
+
+            # once there is no more chunks
+            # parse Content-Range to get real position data
+            if "Content-Range" in r.headers:
+                cr = r.headers["Content-Range"]
+                start, end = re.match(r"^.+-(\d+)/(\d+)", cr).groups()
+                pos = int(start) + 1
+                if end.isdigit():
+                    total_int = int(end)
+                    response_headers["Content-Length"] = end
+
+    response_headers = {
+        "Content-Length": total,
+        "Accept-Ranges": "bytes",
+    }
+
+    return Response(
+        generate(),
+        headers=response_headers,
+        mimetype=mimetype,
+        direct_passthrough=True,
+    )

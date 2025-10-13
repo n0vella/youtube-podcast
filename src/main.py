@@ -1,3 +1,4 @@
+import datetime
 import re
 
 import requests
@@ -42,7 +43,13 @@ CHUNK_SIZE = 1024 * 1024 * 10
 
 @app.route("/audio/<string:video_id>")
 def get_audio(video_id: str):
-    url = get_audio_link(video_id)
+    url = cache.get(video_id) or get_audio_link(video_id)
+
+    expire = re.search(r"expire=(\d{10,})", url).group(1)
+
+    timeout = int(expire) - datetime.datetime.now(tz=datetime.UTC).timestamp()
+
+    cache.set(video_id, url, timeout=int(timeout))
 
     # minimal browser-like headers
     h = {

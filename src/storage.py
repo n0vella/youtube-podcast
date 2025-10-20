@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -20,18 +19,22 @@ def save_videos(channel_id: str, videos: list[Video]) -> bool | list[Video]:
     file_updated = False  # any of the checked videos was already on storage
 
     if file.exists():
-        with file.open() as f:
-            previous_videos = json.load(f)
+        try:
+            with file.open() as f:
+                previous_videos = json.load(f)
 
-        previous_videos_ids = [v["video_id"] for v in previous_videos]
-        new_videos: list[Video] = []
+            previous_videos_ids = [v["video_id"] for v in previous_videos]
+            new_videos: list[Video] = []
 
-        for video in videos:
-            if video["video_id"] in previous_videos_ids:
-                file_updated = True
-                break
+            for video in videos:
+                if video["video_id"] in previous_videos_ids:
+                    file_updated = True
+                    break
 
-            new_videos.append(video)
+                new_videos.append(video)
+        except (json.decoder.JSONDecodeError, Exception):
+            new_videos = videos
+            previous_videos = []
 
     else:
         new_videos = videos

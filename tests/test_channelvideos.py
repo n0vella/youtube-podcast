@@ -1,6 +1,6 @@
 # ruff: noqa: T201
 
-from src.api import get_channel_id, get_channel_videos
+from yt2podcast.api import get_channel_id, get_channel_videos
 
 channel_id = get_channel_id("LordDraugr")
 

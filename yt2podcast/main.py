@@ -6,9 +6,9 @@ from flask import Flask, Response, request
 from flask_caching import Cache
 from flask_cors import CORS
 
-from src.api import Video, get_channel_id, get_channel_info, get_channel_videos
-from src.audio import get_audio_link
-from src.feed import generate_feed
+from yt2podcast.api import Video, get_channel_id, get_channel_info, get_channel_videos
+from yt2podcast.audio import get_audio_link
+from yt2podcast.feed import generate_feed
 
 app = Flask(__name__)
 CORS(app)

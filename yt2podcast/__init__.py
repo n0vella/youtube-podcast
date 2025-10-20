@@ -22,5 +22,5 @@ logging.basicConfig(
 
 logging.getLogger("werkzeug").setLevel(os.getenv("LOG_LEVEL") or "WARNING")
 
-logger.info("Starting Youtube Podcast")
+logger.info("Starting Youtube2Podcast")
 # endregion

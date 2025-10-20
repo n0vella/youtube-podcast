@@ -2,14 +2,14 @@
     "version": 2,
     "builds": [
         {
-            "src": "src/main.py",
+            "src": "yt2podcast/main.py",
             "use": "@vercel/python"
         }
     ],
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "src/main.py"
+            "dest": "yt2podcast/main.py"
         }
     ]
 }

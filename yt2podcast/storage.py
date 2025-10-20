@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.api import Video
+    from yt2podcast.api import Video
 
 
 STORAGE_PATH = Path("./feeds")

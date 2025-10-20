@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from urllib.parse import urljoin
 
 if TYPE_CHECKING:
-    from src.api import ChannelInfo, Video
+    from yt2podcast.api import ChannelInfo, Video
 
 
 def generate_feed(channel_info: ChannelInfo, videos: list[Video], root_url: str) -> str:

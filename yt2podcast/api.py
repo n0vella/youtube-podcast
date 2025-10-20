@@ -7,7 +7,7 @@ from typing import TypedDict
 
 from googleapiclient.discovery import build
 
-from src.storage import save_videos
+from yt2podcast.storage import save_videos
 
 
 class ChannelInfo(TypedDict):

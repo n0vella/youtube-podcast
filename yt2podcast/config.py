@@ -1,9 +1,14 @@
+from pathlib import Path
+
 from dynaconf import Dynaconf
+
+SETTINGS_DIR = Path(__file__).parent.parent
 
 settings = Dynaconf(
     envvar_prefix="DYNACONF",
-    settings_files=["../settings.toml", "../.secrets.toml"],
+    settings_files=[
+        str(SETTINGS_DIR / "settings.toml"),
+        str(SETTINGS_DIR / ".secrets.toml"),
+    ],
 )
 
-# `envvar_prefix` = export envvars with `export DYNACONF_FOO=bar`.
-# `settings_files` = Load these files in the order.

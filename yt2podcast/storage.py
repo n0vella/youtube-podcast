@@ -3,7 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import TYPE_CHECKING
-from venv import logger
+
+from yt2podcast import logger
 
 if TYPE_CHECKING:
     from yt2podcast.api import Video

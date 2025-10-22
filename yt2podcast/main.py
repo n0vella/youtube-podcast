@@ -6,6 +6,7 @@ from flask import Flask, Response, request
 from flask_caching import Cache
 from flask_cors import CORS
 
+from yt2podcast import logger
 from yt2podcast.api import Video, get_channel_id, get_channel_info, get_channel_videos
 from yt2podcast.audio import get_audio_link
 from yt2podcast.feed import generate_feed
@@ -24,6 +25,7 @@ def get_channel_feed(channel_name: str) -> Response:
     channel_id = get_channel_id(channel_name)
 
     channel_info = get_channel_info(channel_id)
+    logger.info("Updating feed")
     videos = get_channel_videos(channel_id)
 
     def filter_results(video: Video) -> bool:
@@ -34,6 +36,7 @@ def get_channel_feed(channel_name: str) -> Response:
 
     videos = filter(filter_results, videos)
 
+    logger.info("Generating feed")
     feed_xml = generate_feed(channel_info, videos, request.url_root)
     return Response(feed_xml, mimetype="application/xml")
 
@@ -43,13 +46,18 @@ CHUNK_SIZE = 1024 * 1024 * 10
 
 @app.route("/audio/<string:video_id>")
 def get_audio(video_id: str):
-    url = cache.get(video_id) or get_audio_link(video_id)
+    logger.info("Playing: %s", video_id)
+    url = cache.get(video_id)
+    if url:
+        logger.info("Using cached audio url: %s", url)
+    else:
+        logger.info("Getting audio link using yt-dlp")
+        url = get_audio_link(video_id)
 
-    expire = re.search(r"expire=(\d{10,})", url).group(1)
-
-    timeout = int(expire) - datetime.datetime.now(tz=datetime.UTC).timestamp()
-
-    cache.set(video_id, url, timeout=int(timeout))
+        expire = re.search(r"expire=(\d{10,})", url).group(1)
+        timeout = int(expire) - datetime.datetime.now(tz=datetime.UTC).timestamp()
+        cache.set(video_id, url, timeout=int(timeout))
+        logger.info("Url %s will be cached %d minutes", url, int(timeout) / 60)
 
     # minimal browser-like headers
     h = {

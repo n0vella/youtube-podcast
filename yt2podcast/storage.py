@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import TYPE_CHECKING
+from venv import logger
 
 if TYPE_CHECKING:
     from yt2podcast.api import Video
@@ -33,6 +34,7 @@ def save_videos(channel_id: str, videos: list[Video]) -> bool | list[Video]:
 
                 new_videos.append(video)
         except (json.decoder.JSONDecodeError, Exception):
+            logger.exception("Error using saver feed: ")
             new_videos = videos
             previous_videos = []
 
@@ -44,11 +46,14 @@ def save_videos(channel_id: str, videos: list[Video]) -> bool | list[Video]:
     feed.sort(key=lambda v: v["published_at"], reverse=True)
 
     if new_videos:
+        logger.info("%d new entries added to feed", len(new_videos))
         with file.open("w") as f:
             json.dump(
                 feed,
                 f,
                 indent=2,
             )
+    else:
+        logger.info("No new entries added to feed")
 
     return file_updated, feed

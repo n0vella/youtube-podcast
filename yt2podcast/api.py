@@ -6,8 +6,9 @@ from typing import TypedDict
 
 from googleapiclient.discovery import build
 
-from yt2podcast.storage import save_videos
+from yt2podcast import logger
 from yt2podcast.config import settings
+from yt2podcast.storage import save_videos
 
 
 class ChannelInfo(TypedDict):
@@ -130,8 +131,12 @@ def get_channel_videos(channel_id: str) -> list[Video]:
 
     results: list[Video] = []
 
+    i = 1
     while True:
         # search api endpoint doesn't work well
+        logger.info("Fetching feed page %d", i)
+        i += 1
+
         r = youtube.playlistItems().list(**api_args).execute()
         next_page_token = r.get("nextPageToken")
 
@@ -160,6 +165,7 @@ def get_channel_videos(channel_id: str) -> list[Video]:
         file_updated, feed = save_videos(channel_id, iteration_result)
 
         if file_updated:
+            logger.info("")
             return feed
 
         if next_page_token:

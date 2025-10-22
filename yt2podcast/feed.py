@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import os
 import xml.etree.ElementTree as ET
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from urllib.parse import urljoin
+
+from yt2podcast.config import settings
 
 if TYPE_CHECKING:
     from yt2podcast.api import ChannelInfo, Video
@@ -42,7 +43,7 @@ def generate_feed(channel_info: ChannelInfo, videos: list[Video], root_url: str)
         enclosure = ET.SubElement(item, "enclosure")
         enclosure.set(
             "url",
-            urljoin(os.getenv("SERVER_URL"), f"{root_url}audio/{video_id}"),
+            urljoin(settings.other.server_url, f"{root_url}audio/{video_id}"),
         )
         enclosure.set("type", "audio/mpeg")
         ET.SubElement(item, "itunes:image").set(

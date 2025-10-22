@@ -1,26 +1,19 @@
 import logging
-import os
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
+from yt2podcast.config import settings
 
 # region: logging
-logging_format = (
-    os.getenv("LOG_FORMAT") or "%(asctime)s (%(name)s) [%(levelname)s]: %(message)s"
-)
-
 logger = logging.getLogger(__package__)
 
 logging.basicConfig(
-    filename=os.getenv("LOG_FILE"),
-    level=os.getenv("LOG_LEVEL"),
-    format=logging_format,
-    datefmt="%d/%m/%Y %H:%M:%S",
+    filename=settings.logging.log_file or None,
+    level=settings.logging.levels.root,
+    format=settings.logging.format,
+    datefmt=settings.logging.datefmt,
 )
 
-logging.getLogger("werkzeug").setLevel(os.getenv("LOG_LEVEL") or "WARNING")
+logging.getLogger("werkzeug").setLevel(settings.logging.levels.werkzeug)
+logging.getLogger("googleapiclient.discovery").setLevel(settings.logging.levels.yt_api)
 
 logger.info("Starting Youtube2Podcast")
 # endregion

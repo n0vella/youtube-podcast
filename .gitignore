@@ -4,3 +4,5 @@
 .vercel
 feeds
 *.log
+# Ignore dynaconf secret files
+.secrets.*

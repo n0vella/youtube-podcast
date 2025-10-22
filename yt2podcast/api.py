@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import re
 from datetime import datetime
 from typing import TypedDict
@@ -8,6 +7,7 @@ from typing import TypedDict
 from googleapiclient.discovery import build
 
 from yt2podcast.storage import save_videos
+from yt2podcast.config import settings
 
 
 class ChannelInfo(TypedDict):
@@ -30,7 +30,7 @@ class ChannelNotFoundError(Exception):
     pass
 
 
-youtube = build("youtube", "v3", developerKey=os.getenv("YOUTUBE_API_KEY"))
+youtube = build("youtube", "v3", developerKey=settings.youtube.api_key)
 
 
 def get_channel_id(channel_name: str) -> str:

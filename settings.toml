@@ -1,0 +1,19 @@
+[youtube]
+api_key = ""
+
+[logging]
+log_file = "" # if empty output piped to console
+# https://docs.python.org/3/library/logging.html#logrecord-attributes
+format = "%(asctime)s (%(name)s) [%(levelname)s]: %(message)s"
+# https://docs.python.org/3/library/time.html#time.strftime
+datefmt = "%d/%m/%Y %H:%M:%S"
+
+[logging.levels]
+# NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL
+# https://docs.python.org/3/library/logging.html#logging-levels
+root = "DEBUG"
+werkzeug = "WARNING"
+yt_api = "WARNING"
+
+[other]
+server_url = "" # used to generate audio url, use if feed links doesn't work

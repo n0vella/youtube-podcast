@@ -18,6 +18,8 @@ click==8.3.0
     # via flask
 colorama==0.4.6
     # via click
+dynaconf==3.2.12
+    # via -r requirements.in
 flask==3.1.2
     # via
     #   -r requirements.in
@@ -70,8 +72,6 @@ pyasn1-modules==0.4.2
     # via google-auth
 pyparsing==3.2.5
     # via httplib2
-python-dotenv==1.1.1
-    # via -r requirements.in
 requests==2.32.5
     # via google-api-core
 rsa==4.9.1

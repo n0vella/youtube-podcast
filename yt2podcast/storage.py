@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 STORAGE_PATH = Path("./storage/feeds")
 
-STORAGE_PATH.mkdir(exist_ok=True)
+STORAGE_PATH.mkdir(exist_ok=True, parents=True)
 
 
 def save_videos(channel_id: str, videos: list[Video]) -> bool | list[Video]:

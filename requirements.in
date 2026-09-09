@@ -9,3 +9,5 @@ yt-dlp
 
 #other
 dynaconf
+packaging
+gevent
